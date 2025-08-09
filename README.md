@@ -1,30 +1,20 @@
-# Viral Video Maker MVP
-
-*Automatically synced with your [v0.dev](https://v0.dev) deployments*
+# ViralMotion AI
 
 [![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/builderac2025-8211s-projects/v0-viral-video-maker-mvp)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.dev-black?style=for-the-badge)](https://v0.dev/chat/projects/xe5uap6obXi)
 
 ## Overview
 
-This repository will stay in sync with your deployed chats on [v0.dev](https://v0.dev).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.dev](https://v0.dev).
+In today’s attention economy, trends on TikTok, YouTube Shorts, and Instagram Reels move at lightning speed, but most founders and small businesses can’t keep up. Video production is slow, costly, and disconnected from what’s trending right now, meaning brands often miss the moment when virality is possible.
+
+To solve this problem, ViralMotion AI, an AI-powered platform helps startups, solo founders, and small marketing teams who want Hollywood‑level content at everyday speed and cost to turn ideas into ready-to-publish viral videos in minutes. It is an end-to-end system that connects cutting‑edge AI video models (Google VEO, OpenAI Sora, Pika, Runway, VO3) with real‑time trend detection from TikTok, YouTube, and Google Trends. The platform can:
+- Generate scripts and videos instantly
+- Auto‑integrate trending sounds, hashtags, and styles
+- Edit and format for short‑form platforms
+- Publish directly to social media with one click
+
 
 ## Deployment
 
-Your project is live at:
+The project is live at:
 
 **[https://vercel.com/builderac2025-8211s-projects/v0-viral-video-maker-mvp](https://vercel.com/builderac2025-8211s-projects/v0-viral-video-maker-mvp)**
-
-## Build your app
-
-Continue building your app on:
-
-**[https://v0.dev/chat/projects/xe5uap6obXi](https://v0.dev/chat/projects/xe5uap6obXi)**
-
-## How It Works
-
-1. Create and modify your project using [v0.dev](https://v0.dev)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
