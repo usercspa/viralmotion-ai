@@ -1,0 +1,253 @@
+// app/layout.tsx
+import { Manrope, Space_Grotesk } from 'next/font/google'
+import './globals.css'
+import { Inter } from 'next/font/google'
+import { ReactNode } from 'react'
+
+const fontSans = Manrope({ subsets: ["latin"], variable: "--font-sans" })
+const fontDisplay = Space_Grotesk({ subsets: ["latin"], variable: "--font-display" })
+
+const inter = Inter({ subsets: ['latin'] })
+
+export default function RootLayout({ children }: { children: ReactNode }) {
+  return (
+    <html lang="en" className={inter.className}>
+      <body className={`${fontSans.variable} ${fontDisplay.variable} antialiased`}>{children}</body>
+    </html>
+  )
+}
+
+// app/globals.css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand-from: #c026d3; /* fuchsia-600 */
+  --brand-to: #e11d48;   /* rose-600 */
+}
+
+h1, h2, h3, .font-display {
+  font-family: var(--font-display), ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  letter-spacing: -0.02em;
+}
+
+.brand-gradient {
+  background-image: linear-gradient(90deg, var(--brand-from), var(--brand-to));
+}
+
+// components/site-header.tsx
+import React from 'react'
+import { SparklesIcon } from '@heroicons/react/24/outline'
+
+const SiteHeader = () => {
+  return (
+    <header className="bg-white">
+      <nav className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8" aria-label="Global">
+        <div className="flex lg:flex-1">
+          <div className="flex w-full items-center justify-between md:w-auto">
+            <a href="#" className="-m-1.5 p-1.5">
+              <span className="sr-only">Your Company</span>
+              <img className="h-8 w-auto" src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600" alt="" />
+            </a>
+            <div className="flex lg:hidden">
+              <button type="button" className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700">
+                <span className="sr-only">Open main menu</span>
+                {/* Icon goes here */}
+              </button>
+            </div>
+          </div>
+          <div className="hidden lg:flex lg:gap-x-12">
+            {/* Navigation links go here */}
+          </div>
+        </div>
+        <div className="hidden lg:flex lg:flex-1 lg:justify-end">
+          {/* Action buttons go here */}
+        </div>
+      </nav>
+    </header>
+  )
+}
+
+export default SiteHeader
+
+// components/marketing/hero.tsx
+import React from 'react'
+import { SparklesIcon } from '@heroicons/react/24/outline'
+
+const Hero = () => {
+  return (
+    <div className="relative isolate px-6 pt-14 lg:px-8">
+      <div className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80" aria-hidden="true">
+        <div className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] max-w-none" style={{ clipPath: "polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 92.4%, 72.5% 92.4%, 72.5% 67.8%, 74.1% 44.1%)" }}>
+          <img className="relative h-full w-full" src="https://tailwindui.com/img/ecommerce-images/home-page-04-hero-full.jpg" alt="" />
+        </div>
+      </div>
+      <div className="mx-auto max-w-2xl py-32 sm:py-48 lg:py-56">
+        <div className="hidden sm:mb-8 sm:flex sm:justify-center">
+          <div className="relative rounded-full px-3 py-1 text-sm leading-6 text-gray-600 ring-1 ring-gray-900/10 hover:ring-gray-900/20">
+            Announcing our next round of funding. <a href="#" className="font-semibold text-indigo-600 hover:text-indigo-500">Read more <span aria-hidden="true">&rarr;</span></a>
+          </div>
+        </div>
+        <div className="text-center">
+          <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">Get a better understanding of what you’re building</h1>
+          <p className="mt-6 text-lg leading-8 text-gray-600">Anim aute id magna aliqua ad ad non deserunt sunt. Qui irure qui lorem cupidatat commodo.</p>
+          <div className="mt-10 flex items-center justify-center gap-x-6">
+            <a href="#" className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Get started</a>
+            <a href="#" className="text-sm font-semibold leading-6 text-gray-900">Learn more <span aria-hidden="true">→</span></a>
+          </div>
+        </div>
+      </div>
+      <div className="absolute inset-x-0 top-[calc(100%-13rem)] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[calc(100%-30rem)]" aria-hidden="true">
+        <div className="relative left-[calc(50%+3rem)] aspect-[1155/678] w-[36.125rem] max-w-none" style={{ clipPath: "polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 92.4%, 72.5% 92.4%, 72.5% 67.8%, 74.1% 44.1%)" }}>
+          <img className="relative h-full w-full" src="https://tailwindui.com/img/ecommerce-images/home-page-04-hero-full.jpg" alt="" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default Hero
+
+// components/marketing/features.tsx
+import React from 'react'
+
+const Features = () => {
+  return (
+    <div className="bg-white py-24 sm:py-32">
+      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <div className="mx-auto max-w-2xl lg:text-center">
+          <h2 className="text-base font-semibold leading-7 text-indigo-600">Everything you need to build</h2>
+          <p className="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">A better way to build a better web</p>
+          <p className="mt-6 text-lg leading-8 text-gray-600">Anim aute id magna aliqua ad ad non deserunt sunt. Qui irure qui lorem cupidatat commodo.</p>
+        </div>
+        <div className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 sm:mt-20 sm:grid-cols-2 lg:mt-24 lg:max-w-none lg:grid-cols-4">
+          {/* Feature items go here */}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default Features
+
+// components/marketing/social-proof.tsx
+import React from 'react'
+
+const SocialProof = () => {
+  return (
+    <div className="bg-white py-24 sm:py-32">
+      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <div className="mx-auto max-w-2xl lg:text-center">
+          <h2 className="text-base font-semibold leading-7 text-indigo-600">Trusted by the best</h2>
+          <p className="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Companies of all sizes use our platform</p>
+          <p className="mt-6 text-lg leading-8 text-gray-600">Anim aute id magna aliqua ad ad non deserunt sunt. Qui irure qui lorem cupidatat commodo.</p>
+        </div>
+        <div className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 sm:mt-20 sm:grid-cols-2 lg:mt-24 lg:max-w-none lg:grid-cols-4">
+          {/* Social proof items go here */}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default SocialProof
+
+// components/auth/auth-card.tsx
+import React from 'react'
+
+const AuthCard = () => {
+  return (
+    <div className="bg-white px-6 py-12 shadow-xl ring-1 ring-gray-900/5 sm:mx-auto sm:w-full sm:max-w-sm">
+      <div className="sm:mx-auto sm:w-full sm:max-w-sm">
+        <div className="bg-white px-6 py-12 shadow-xl ring-1 ring-gray-900/5 sm:mx-auto sm:w-full sm:max-w-sm">
+          {/* Auth form goes here */}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default AuthCard
+
+// components/auth/auth-dialogs.tsx
+import React from 'react'
+
+const AuthDialogs = () => {
+  return (
+    <div className="bg-white px-6 py-12 shadow-xl ring-1 ring-gray-900/5 sm:mx-auto sm:w-full sm:max-w-sm">
+      <div className="sm:mx-auto sm:w-full sm:max-w-sm">
+        <div className="bg-white px-6 py-12 shadow-xl ring-1 ring-gray-900/5 sm:mx-auto sm:w-full sm:max-w-sm">
+          {/* Auth dialogs go here */}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default AuthDialogs
+
+// app/page.tsx
+import React from 'react'
+
+const Home = () => {
+  return (
+    <div className="bg-white">
+      {/* Home page content goes here */}
+    </div>
+  )
+}
+
+export default Home
+
+// app/auth/sign-in/page.tsx
+import React from 'react'
+
+const SignIn = () => {
+  return (
+    <div className="bg-white">
+      {/* Sign-in page content goes here */}
+    </div>
+  )
+}
+
+export default SignIn
+
+// app/auth/sign-up/page.tsx
+import React from 'react'
+
+const SignUp = () => {
+  return (
+    <div className="bg-white">
+      {/* Sign-up page content goes here */}
+    </div>
+  )
+}
+
+export default SignUp
+
+// app/(dashboard)/dashboard/page.tsx
+import React from 'react'
+
+const Dashboard = () => {
+  return (
+    <div className="bg-white">
+      {/* Dashboard page content goes here */}
+    </div>
+  )
+}
+
+export default Dashboard
+
+// app/(dashboard)/create/page.tsx
+import React from 'react'
+
+const Create = () => {
+  return (
+    <div className="bg-white">
+      {/* Create page content goes here */}
+    </div>
+  )
+}
+
+export default Create

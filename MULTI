@@ -1,0 +1,74 @@
+"use client"
+
+import type * as React from "react"
+import { AppSidebar } from "@/components/app-sidebar"
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import { TopNav } from "@/components/dashboard/top-nav"
+import { AuthProvider } from "@/hooks/use-auth"
+import { Toaster } from "@/components/ui/toaster"
+import { BottomNav } from "@/components/dashboard/bottom-nav"
+import { OfflineBanner } from "@/components/system/offline-banner"
+
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <AuthProvider>
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          <TopNav />
+          <div className="flex-1 bg-background pb-16 md:pb-0">{children}</div>
+        </SidebarInset>
+      </SidebarProvider>
+      <BottomNav />
+      <Toaster />
+    </AuthProvider>
+  )
+}
+
+import Link from "next/link"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+
+const videos = [
+  { id: "vid-1", title: "How to launch your MVP in 7 days" },
+  { id: "vid-2", title: "Our AI cuts your editing time by 90%" },
+  { id: "vid-3", title: "Top 3 hooks for product videos" },
+]
+
+export default function VideosIndex() {
+  const hasVideos = videos.length > 0
+
+  if (!hasVideos) {
+    return (
+      <div className="mx-auto max-w-3xl p-6 text-white">
+        <div className="rounded-xl border border-white/10 bg-white/[0.03] p-8 text-center">
+          <h1 className="text-2xl font-semibold">No videos yet</h1>
+          <p className="mt-2 text-sm text-white/70">Create your first video to see it appear here.</p>
+          <Button className="mt-4 bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:from-violet-500 hover:to-indigo-500" asChild>
+            <Link href="/create">Create a video</Link>
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="mx-auto max-w-6xl p-6">
+      <h1 className="mb-4 text-2xl font-semibold">My Videos</h1>
+      <div className="grid gap-4 sm:grid-cols-2">
+        {videos.map((v) => (
+          <Link key={v.id} href={`/videos/${v.id}`}>
+            <Card className="border-white/10 bg-white/[0.03] transition hover:-translate-y-0.5">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">{v.title}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="aspect-video w-full rounded-lg bg-white/5" />
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
+      </div>
+    </div>
+  )
+}
