@@ -1,4 +1,4 @@
-# Viral Video Maker MVP
+# ViralMotion AI
 
 A modern, production-ready video generation platform integrating Runway ML for high‑quality, AI-assisted short-form video creation. The app provides a streamlined creation wizard, real-time job tracking with progress, queue and retry logic, premium advanced controls (A/B testing, batch variations, presets), smart suggestions, mobile optimizations (offline queue and notifications), team collaboration (shared templates, approvals, usage), and post-generation workflows (preview, versioning, download, share, and publishing).
 
@@ -140,11 +140,6 @@ Use these with PNPM or your package manager of choice.
 - Client errors about missing env: Move sensitive values to server-only variables; only use NEXT_PUBLIC_ for safe, public values. [^1]
 - Long-running jobs: The queue and retry logic will handle transient failures. Check app/api/runway/jobs and lib/backoff.ts.
 
-## License
-
-TBD. If you plan to open source, consider MIT or Apache-2.0.
-
-## References
 
 [^1]: Creating a full-stack app with Next.js App Router on Vercel. Client-side env variables must be prefixed with NEXT_PUBLIC. Route Handlers keep provider keys server-only.
 https://vercel.com/docs/v0/workflows/full-stack-app
