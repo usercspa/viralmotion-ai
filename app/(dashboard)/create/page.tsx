@@ -12,16 +12,11 @@ import { Textarea } from "@/components/ui/textarea"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/hooks/use-toast"
-import { Loader2, RefreshCcw, Save, Sparkles } from "lucide-react"
+import { Loader2, RefreshCcw, Save, Sparkles, Info } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { GenerationOverlay, type VideoCreationRequest } from "@/components/create/generation-overlay"
 import { estimateCostCents } from "@/services/cost"
-import { TrendHints } from "@/components/create/trend-hints"
-import { SmartSuggestions } from "@/components/create/smart-suggestions"
-import { AdvancedControls } from "@/components/create/advanced-controls"
-import { BrandCheck } from "@/components/brand/brand-check"
-import { PublishSheet } from "@/components/publish/publish-sheet"
 
 type VideoType = "product_demo" | "thought_leadership" | "behind_the_scenes"
 type Tone = "professional" | "casual" | "humorous" | "urgent"
@@ -171,10 +166,6 @@ export default function CreateWizardPage() {
     autoRegenerate: true,
   })
 
-  const [abPrompt, setAbPrompt] = React.useState<{ a?: string; b?: string }>({})
-  const [publishOpen, setPublishOpen] = React.useState(false)
-  const [lastVideoUrl, setLastVideoUrl] = React.useState<string | null>(null)
-
   // Load defaults from Preferences
   React.useEffect(() => {
     try {
@@ -255,14 +246,13 @@ export default function CreateWizardPage() {
 
   // Smart prompt engineering: build optimized prompt from script and options
   function buildOptimizedPrompt() {
-    const effectiveScript = abPrompt.a || state.script
     const lines = [
       `Style: ${state.style}; motion: ${state.motion}; camera: ${state.camera_movement}; lighting: ${state.lighting}; quality: ${state.quality}.`,
       `Aspect: ${preferredRatio()} • Duration: ~${state.estimatedSeconds || 20}s.`,
       `Guidance: high clarity, on-brand color accents. Avoid noisy text overlays.`,
       state.negativePrompt ? `Negative: ${state.negativePrompt}` : "",
       "Script:",
-      effectiveScript,
+      state.script,
     ]
     return lines.filter(Boolean).join("\n")
   }
@@ -329,12 +319,13 @@ export default function CreateWizardPage() {
       const raw = localStorage.getItem(videosKey)
       const arr = raw ? JSON.parse(raw) : []
       localStorage.setItem(videosKey, JSON.stringify([...entries, ...arr]))
-      setLastVideoUrl(urls.find(Boolean) || null)
       setGenOpen(false)
-      if (jobs.length === 1 && urls[0]) {
-        setPublishOpen(true)
+      if (jobs.length === 1 && entries[0].status === "ready") {
+        toast({ title: "Video ready", description: "Opening editor…" })
+        router.push(`/videos/${entries[0].id}`)
       } else {
-        router.push(`/videos`)
+        toast({ title: "Videos saved", description: "Check My Videos to compare versions." })
+        router.push("/videos")
       }
     } catch {
       toast({ title: "Could not store video(s)", description: "Please try again.", variant: "destructive" })
@@ -370,10 +361,6 @@ export default function CreateWizardPage() {
                 value={state.idea}
                 onChange={(e) => setState({ ...state, idea: e.target.value })}
               />
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-white/60">Try adding a trend:</span>
-                <TrendHints onInsert={(text) => setState((s) => ({ ...s, idea: (s.idea + " " + text).trim() }))} />
-              </div>
               <p className="text-xs text-white/50">Tip: Great hooks are surprising, specific, or contrarian.</p>
             </div>
 
@@ -754,61 +741,20 @@ export default function CreateWizardPage() {
               />
             </div>
 
-            <SmartSuggestions
-              script={state.script}
-              platforms={state.platforms}
-              brandBg={state.brandBg}
-              brandText={state.brandText}
-              current={{
-                durationSeconds: state.estimatedSeconds || 20,
-                style: state.style,
-                motion: state.motion,
-                camera_movement: state.camera_movement,
-                lighting: state.lighting,
-                quality: state.quality,
-              }}
-              onApply={(patch) => {
-                setState((s) => ({
-                  ...s,
-                  estimatedSeconds: patch.durationSeconds ?? s.estimatedSeconds,
-                  style: (patch as any).style ?? s.style,
-                  motion: (patch as any).motion ?? s.motion,
-                  camera_movement: (patch as any).camera_movement ?? s.camera_movement,
-                  lighting: (patch as any).lighting ?? s.lighting,
-                  quality: (patch as any).quality ?? s.quality,
-                }))
-              }}
-            />
-
-            <AdvancedControls
-              baseScript={state.script || generateMockScript(state.idea, state.videoType, state.tone, state.platforms)}
-              negativePrompt={state.negativePrompt}
-              variationCount={state.variationCount}
-              currentOptions={{
-                style: state.style,
-                motion: state.motion,
-                camera_movement: state.camera_movement,
-                lighting: state.lighting,
-                quality: state.quality,
-              }}
-              onChange={(patch) => {
-                if (typeof patch.variationCount === "number")
-                  setState((s) => ({ ...s, variationCount: patch.variationCount! }))
-                if (typeof patch.negativePrompt === "string")
-                  setState((s) => ({ ...s, negativePrompt: patch.negativePrompt! }))
-                setAbPrompt((prev) => ({ ...prev, a: patch.scriptA ?? prev.a, b: patch.scriptB ?? prev.b }))
-              }}
-              onApplyOptions={(preset) => {
-                setState((s) => ({
-                  ...s,
-                  style: preset.style,
-                  motion: preset.motion,
-                  camera_movement: preset.camera_movement,
-                  lighting: preset.lighting,
-                  quality: preset.quality,
-                }))
-              }}
-            />
+            <div className="flex items-center justify-between rounded-md border border-white/10 bg-white/5 p-3">
+              <div className="flex items-center gap-2 text-sm text-white/80">
+                <Info className="h-4 w-4 text-white/60" />
+                Estimated cost: ${(estCents / 100).toFixed(2)} for {state.variationCount} variation
+                {state.variationCount > 1 ? "s" : ""} ({state.quality}, {state.style})
+              </div>
+              <label className="flex items-center gap-2 text-sm">
+                <Checkbox
+                  checked={state.autoRegenerate}
+                  onCheckedChange={(v) => setState({ ...state, autoRegenerate: Boolean(v) })}
+                />
+                Auto-regenerate if quality is low
+              </label>
+            </div>
 
             <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
               <p className="mb-2 text-sm text-white/70">Preview</p>
@@ -820,7 +766,6 @@ export default function CreateWizardPage() {
                   src={
                     templates.find((t) => t.id === state.templateId)?.img ||
                     "/placeholder.svg?height=720&width=1280&query=video%20template%20preview" ||
-                    "/placeholder.svg" ||
                     "/placeholder.svg" ||
                     "/placeholder.svg"
                   }
@@ -850,8 +795,6 @@ export default function CreateWizardPage() {
                 </div>
               </div>
             </div>
-
-            <BrandCheck bg={state.brandBg} text={state.brandText} />
           </CardContent>
         </Card>
       )}
@@ -916,13 +859,6 @@ export default function CreateWizardPage() {
         onOpenChange={setGenOpen}
         request={genRequest ?? undefined}
         onSuccess={handleGenerationSuccess}
-      />
-
-      <PublishSheet
-        open={publishOpen}
-        onOpenChange={setPublishOpen}
-        defaultCaption={state.idea.slice(0, 120)}
-        videoUrl={lastVideoUrl}
       />
     </div>
   )

@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server"
 import { cookies } from "next/headers"
 import { getRunwayService } from "@/services/runway-service-singleton"
-import { mapUnknownErrorToRunwayError } from "@/lib/runway-error-mapper"
 
 function getOwnerId(): string {
   const jar = cookies()
@@ -20,8 +19,7 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
     const job = await service.getJob(params.id)
     return NextResponse.json(job)
   } catch (e: any) {
-    const error = mapUnknownErrorToRunwayError(e)
-    return NextResponse.json({ error }, { status: error.status || 500 })
+    return NextResponse.json({ error: e?.message || "Failed to get job" }, { status: e?.status || 500 })
   }
 }
 
@@ -32,7 +30,6 @@ export async function DELETE(_: Request, { params }: { params: { id: string } })
     const job = await service.cancelJob(params.id)
     return NextResponse.json(job)
   } catch (e: any) {
-    const error = mapUnknownErrorToRunwayError(e)
-    return NextResponse.json({ error }, { status: error.status || 500 })
+    return NextResponse.json({ error: e?.message || "Failed to cancel job" }, { status: e?.status || 500 })
   }
 }

@@ -2,7 +2,7 @@
 
 import type { RateLimiter } from "@/lib/rate-limit"
 import { APIError } from "@/lib/api-error"
-import { getNextApiKey, setApiKeys, reportFailure, reportSuccess } from "@/lib/quota-tracker"
+import { getNextApiKey, setApiKeys } from "@/lib/quota-tracker"
 
 export class RunwayValidationError extends APIError {}
 export class RunwayRateLimitedError extends APIError {}
@@ -20,7 +20,7 @@ export type RequestOptions = {
 
 export type ClientConfig = {
   baseURL?: string
-  apiKey?: string
+  apiKey?: string // Deprecated in favor of key pool; kept for single-key setups
   rateLimiter?: RateLimiter
   getApiKey?: () => string
 }
@@ -63,6 +63,7 @@ export class RunwayAPIClient {
     if (!key) throw new APIError("Runway API key missing", { status: 500 })
     headers.Authorization = `Bearer ${key}`
 
+    // Rate limiting
     if (this.rateLimiter) {
       await this.rateLimiter.removeTokens(1)
     }
@@ -76,6 +77,8 @@ export class RunwayAPIClient {
     const baseDelay = options.retry?.baseDelayMs ?? 1200
 
     let attempt = 0
+    // Simple retry loop
+    // Retry on 408, 429, 500, 502, 503, 504 and network errors
     while (true) {
       try {
         const res = await fetch(url, {
@@ -86,29 +89,23 @@ export class RunwayAPIClient {
         })
         clearTimeout(timeout)
         if (res.ok) {
-          reportSuccess(key)
           const ct = res.headers.get("content-type") || ""
           if (ct.includes("application/json")) return (await res.json()) as T
+          // Some endpoints may return 204 or empty
           return {} as unknown as T
         }
+        // Non-OK -> map error
         const data = await safeJson(res)
         const mapped = this.mapError(res.status, data)
-        const retryAfterHeader = res.headers.get("retry-after")
-        let retryAfterMs: number | undefined = undefined
-        if (retryAfterHeader) {
-          const sec = Number(retryAfterHeader)
-          if (!isNaN(sec)) retryAfterMs = sec * 1000
-        }
-        reportFailure(key, res.status, data?.error?.code || data?.code, retryAfterMs)
+        // Should we retry?
         if (this.shouldRetry(res.status, data) && attempt < maxRetries) {
           attempt++
-          await delay(this.computeDelay(baseDelay, attempt, retryAfterHeader))
+          await delay(this.computeDelay(baseDelay, attempt, res.headers.get("retry-after")))
           continue
         }
         throw mapped
       } catch (err: any) {
         if (err?.name === "AbortError") {
-          reportFailure(key, 504, "timeout")
           if (attempt < maxRetries) {
             attempt++
             await delay(this.computeDelay(baseDelay, attempt))
@@ -117,7 +114,6 @@ export class RunwayAPIClient {
           throw new RunwayUnavailableError("Request timed out", { status: 504 })
         }
         // Network error?
-        reportFailure(key, 503, "network")
         if (attempt < maxRetries) {
           attempt++
           await delay(this.computeDelay(baseDelay, attempt))
@@ -160,6 +156,7 @@ export class RunwayAPIClient {
   private shouldRetry(status: number, body: any) {
     if ([408, 500, 502, 503, 504].includes(status)) return true
     if (status === 429) {
+      // Retry on rate limit unless it's a quota hard-fail
       const code = (body?.code || body?.error?.code || "").toLowerCase()
       if (code.includes("quota")) return false
       return true

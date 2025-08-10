@@ -1,76 +1,41 @@
-// In-memory smart queue with simple concurrency and backoff.
+// Queue visibility and estimation helpers
 
-type Task<T = any> = {
-  id: string
-  body: any
-  ownerId: string
-  run: () => Promise<T>
-  resolve: (v: T | PromiseLike<T>) => void
-  reject: (e: any) => void
-}
+import { getJobStore } from "./job-store"
+import { getUserAnalytics } from "./analytics"
+import type { JobQueueStatus } from "@/types/jobs"
 
-class SmartQueue {
-  private concurrency: number
-  private active = 0
-  private q: Task[] = []
-  private listeners: Set<() => void> = new Set()
+export function getQueueStatusForJob(jobId: string, ownerId: string): JobQueueStatus {
+  const store = getJobStore()
+  const entries = Array.from(store.jobs.values()).filter((r) => !r.done)
+  entries.sort((a, b) => a.createdAtMs - b.createdAtMs)
 
-  constructor(concurrency = 2) {
-    this.concurrency = concurrency
-  }
-
-  get length() {
-    return this.q.length
-  }
-  get running() {
-    return this.active
-  }
-
-  onChange(cb: () => void) {
-    this.listeners.add(cb)
-    return () => this.listeners.delete(cb)
-  }
-
-  enqueue<T>(task: Omit<Task<T>, "resolve" | "reject">): Promise<T> {
-    return new Promise<T>((resolve, reject) => {
-      const t: Task<T> = { ...task, resolve, reject }
-      this.q.push(t)
-      this.tick()
-      this.emit()
-    })
-  }
-
-  private emit() {
-    for (const l of this.listeners) l()
-  }
-
-  private tick() {
-    if (this.active >= this.concurrency) return
-    const next = this.q.shift()
-    if (!next) return
-    this.active++
-    ;(async () => {
-      try {
-        const res = await next.run()
-        next.resolve(res)
-      } catch (e) {
-        next.reject(e)
-      } finally {
-        this.active--
-        this.emit()
-        // schedule next microtask
-        setTimeout(() => this.tick(), 0)
-      }
-    })()
-  }
-
-  stats() {
-    return { queued: this.length, running: this.running }
+  const position = Math.max(
+    0,
+    entries.findIndex((r) => r.job.id === jobId),
+  )
+  const queueLength = entries.length
+  const userAvg = getUserAnalytics(ownerId).averageGenerationTimeMs
+  const globalAvg = 120_000 // fallback baseline
+  const averageProcessingTime = Math.round((userAvg + globalAvg) / 2)
+  const estimatedStartTime = new Date(Date.now() + Math.max(0, position) * averageProcessingTime)
+  return {
+    position,
+    estimatedStartTime,
+    queueLength,
+    averageProcessingTime,
   }
 }
 
-let instance: SmartQueue | null = null
-export function getQueue() {
-  if (!instance) instance = new SmartQueue(2)
-  return instance
+export function getQueueSnapshot() {
+  const store = getJobStore()
+  const entries = Array.from(store.jobs.values()).filter((r) => !r.done)
+  entries.sort((a, b) => a.createdAtMs - b.createdAtMs)
+  const queueLength = entries.length
+  const averageProcessingTime = 120_000
+  return {
+    queueLength,
+    averageProcessingTime,
+    headJobId: entries[0]?.job.id || null,
+    nextEstimatedStart: entries[0] ? new Date(Date.now() + averageProcessingTime) : null,
+  }
 }
